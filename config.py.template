@@ -1,0 +1,11 @@
+class SIRIDB:
+    host = 'HOST'
+    port = 0
+    username = 'USERNAME'
+    password = 'PASSWORD'
+    dbname = 'DBNAME'
+
+class MQTT:
+    host = 'HOST'
+    domain = 'DOMAIN'
+    period = 60 # time in seconds
