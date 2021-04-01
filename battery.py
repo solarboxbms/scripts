@@ -76,11 +76,10 @@ def decode(_d):
 
     # cells
     for kcell, vcell in cells.items():
-        #res[kcell] = {}
         for i in range(1, CELLS+1):
             z = read(vcell)
             #print(f'{kcell}[{i}]', z)
-            res['f{kcell}.{i}'] = z
+            res[f'{kcell}.{i}'] = z
 
     # info
     for kvar, vvar in vars.items():
