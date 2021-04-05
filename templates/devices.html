@@ -2,17 +2,28 @@
 <html lang="es">
 <head>
     <title>Solarbox - devices</title>
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <meta charset="utf-8" />
-    <meta content='15' http-equiv='refresh'/>
+    <meta content="15" http-equiv="refresh"/>
 </head>
  
-<body>
+<body class="bg-gray-300">
     <header>
-       <h1>Solarbox</h1>
-       <p><strong>Devices:</strong></p>
-       <ul>
-       {% for id in ids %}
-       <li><a href="{{ url_for('device', id=id) }}">{{id}}</a></li>
+       <h1 class="text-4xl p-4">Solarbox</h1>
+       {% for k, v in data.items() -%}
+       <div class="bg-gray-300 flex justify-center items-center m-12">
+       <div class="bg-white p-10 rounded-lg shadow-md">
+        <h1 class="text-gl font-bold">{{ k.split('-')[0] + '...' + k.split('-')[-1] }}</h1>
+        <h2 class="text-sl">{{ v }}</h2>
+        <div class="mt-4 mb-10">
+          <p class="text-gray-600">Load 75% completed</p>
+          <div class="bg-gray-400 w-64 h-3 rounded-lg mt-2 overflow-hidden">
+            <div class="bg-green-400 w-3/4 h-full rounded-lg shadow-md"></div>
+          </div>
+        </div>
+        <a href="{{ url_for('device', id=k) }}"><button class="bg-blue-400 py-3 px-8 mt-4 rounded text-sm font-semibold hover:bg-opacity-75">Go to data</button></a>
+        </div>
+    </div>
        {% endfor %}
     </header>
 </body>

@@ -6,6 +6,7 @@ import random
 import json
 import threading
 import battery
+import humanize
 #import paho.mqtt.client as mqtt
 from datetime import datetime
 from siridb.connector import SiriDBClient
@@ -34,11 +35,29 @@ async def show(siri, id):
     await siri.connect()
     res = await siri.query(f'select last() from /{id}.*/ after now - 1h')
     siri.close()
+    if f'{id}.voltages.1' in res:
+        delta = datetime.now() - datetime.fromtimestamp(res[f'{id}.voltages.1'][0][0])
+        moment = humanize.naturaldelta(delta)
+    else:
+        moment = 'no data yet...'
     for k,v in res.items():
         if v:
             data[k[37:]] = v
-    return data
+    return moment, data
+
+async def online(siri):
+    data = {}
+    await siri.connect()
+    res = await siri.query(f'select last() from /.*.uptime/ after now - 1h')
+    siri.close()
+
+    for k,v in res.items():
+        if v:
+            delta = datetime.now() - datetime.fromtimestamp(v[0][0])
+            moment = humanize.naturaldelta(delta)
+            data[k.split('.')[0]] = moment
     
+    return data
 
 
 loop = asyncio.get_event_loop()
@@ -59,12 +78,13 @@ def device(id=None):
     #tasks = [asyncio.async(show(siri,id))]
     #tasks = [getattr(asyncio, 'async')(show(siri,id))]
     #loop = asyncio.get_event_loop()
-    res  = loop.run_until_complete(show(siri,id))
-    return render_template('device.html', id=id, data=dict(reversed(list(res.items()))))
+    moment, data  = loop.run_until_complete(show(siri,id))
+    return render_template('device.html', id=id, moment=moment, data=dict(reversed(list(data.items()))))
 
 @app.route('/devices')
 def devices():
-    return render_template('devices.html', ids=UUIDS)
+    data  = loop.run_until_complete(online(siri))
+    return render_template('devices.html', data=data)
 
 @app.route('/')
 def home():
