@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Solarbox - devices</title>
+    <meta charset="utf-8" />
+    <meta content='15' http-equiv='refresh'/>
+</head>
+ 
+<body>
+    <header>
+       <h1>Solarbox</h1>
+       <p><strong>Devices:</strong></p>
+       <ul>
+       {% for id in ids %}
+       <li><a href="{{ url_for('device', id=id) }}">{{id}}</a></li>
+       {% endfor %}
+    </header>
+</body>
+</html>

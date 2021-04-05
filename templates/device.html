@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Solarbox - {{id}}</title>
+    <meta charset="utf-8" />
+    <meta content='15' http-equiv='refresh'/>
+</head>
+ 
+<body>
+    <header>
+       <h1><a href="{{ url_for('devices') }}">Solarbox</a></h1>
+       <p>Device <strong>{{id}}</strong></p>
+       <ul>
+       {% for k, v in data.items() -%}
+       <li>{{k}}: {{v[0][1]}}</li>
+       {% endfor %}
+    </header>
+</body>
+</html>
