@@ -8,13 +8,22 @@
 </head>
  
 <body>
-    <header>
-       <h1 class="text-4xl"><a href="{{ url_for('devices') }}">Solarbox</a></h1>
-       <p>Device <strong>{{id}} ({{ moment }})</strong></p>
-       <ul class="list-inside">
-       {% for k, v in data.items() -%}
-       <li>{{k}}: {{v[0][1]}}</li>
-       {% endfor %}
-    </header>
+    <h1 class="text-4xl"><a href="{{ url_for('devices') }}">Solarbox</a></h1>
+    <p>Device <strong>{{id}} ({{ moment }})</strong></p>
+    <table class="table-autor">
+    <thead>
+        <tr>
+        <th>Key</th>
+        <th>Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for k, v in data.items() -%}
+        <tr>
+        <td>{{ k }}</td>
+        <td>{{ v[0][1] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </body>
 </html>
