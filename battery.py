@@ -79,8 +79,8 @@ def decode(_d):
         '#Num_Cell_Discharging': 16,
         'AFE_NumCellMin': 16,
         'AFE_Vmin': -24,
-        '_Filler3': 16,
         'AFE_NumCellMax': 16,
+        '_Filler3': 16,
         'AFE_Vmax': -24,
         'Enable_Discharge': 8, # bool
         'Init_Cell': 16
