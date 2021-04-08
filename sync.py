@@ -52,6 +52,8 @@ async def update(siri):
                 except:
                     m = []
                 uuid = message.topic.split('/')[1]
+                #if not uuid.startswith('455db'):
+                #    continue
                 ts = int(time.time())
                 if 'uptime' in m:
                     #print(uuid, m['uptime'])
@@ -62,11 +64,9 @@ async def update(siri):
                     print(f'Sending data for {uuid}...')
                     data = {}
                     for kdata, vdata in _data.items():
-                        if kdata.lower() in ['cum_ah_discharge']:
-                            continue
                         data[f'{uuid}.{kdata.lower()}'] = [[ts, vdata]]
 
-                    print(data)
+                    #print(data)
                     await siri.insert(data)
     siri.close()
 
