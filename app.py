@@ -41,7 +41,7 @@ async def show_devices(siri):
     res_voltage = await siri.query(f'select last() from /.*.total_voltage/ after now - 1h')
     siri.close()
 
-    for k,v in res.items():
+    for k,v in res_uptime.items():
         if v:
             delta = datetime.now() - datetime.fromtimestamp(v[0][0])
             moment = humanize.naturaldelta(delta)
