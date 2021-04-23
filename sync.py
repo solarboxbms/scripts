@@ -39,6 +39,15 @@ async def update(siri):
                 except:
                     m = []
                 uuid = message.topic.split('/')[1]
+
+                if not uuid in UUIDS:
+                    UUIDS[uuid] = {
+                        'name': uuid,
+                        'status': 'online',
+                        'group': 'New',
+                        'sequence': 10
+                    }
+
                 #if not uuid.startswith('455db'):
                 #    continue
                 ts = int(time.time())
