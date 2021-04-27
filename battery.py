@@ -52,10 +52,10 @@ def decode(_d):
         '#Cum_Ah_Discharge': 64, #-64 # v.5 | 32 - others
         'Last_Ah_Charge': 32,
         'Last_Ah_Discharge': 32,
-        'Switch_Temperature': -24,
-        'Micro_Temperature': -24,
-        'Batt_Temperature_1': -24,
-        'Batt_Temperature_2': -24,
+        'Switch_Temperature': -20,
+        'Micro_Temperature': -20,
+        'Batt_Temperature_1': -20,
+        'Batt_Temperature_2': -20,
         'SOC': 16,
         'SOH': 16, 
         'Status': 8, # bool
