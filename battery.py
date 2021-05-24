@@ -17,7 +17,10 @@ def decode(_d):
     def read(q, name):
         global d
         if q <= 0:
-            res = int.from_bytes(d[:4], 'little') / 2**(-q)
+            if int.from_bytes(d[:4], 'little') & (1 << 63):
+                res = (0xffffffff - int.from_bytes(d[:4], 'little')) / 2**q # q came negative from config
+            else:
+                res = int.from_bytes(d[:4], 'little') / 2**(-q)
             print(f'{name}:', ':'.join('{:02x}'.format(c) for c in d[:4]), f'({res})')
             d = d[4:]
         else:
