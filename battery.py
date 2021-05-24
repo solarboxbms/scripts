@@ -49,7 +49,7 @@ def decode(_d):
     vars = {
         'Total_Voltage': -24,
         'Vcapacitor': -24,
-        'Switch_Current': -24,
+        'Switch_Current': -23,
         'Switch_RMS_Current': -23,
         '#Cum_Ah_Charge': 64, #-64, # v.5 | 32 - others
         '#Cum_Ah_Discharge': 64, #-64 # v.5 | 32 - others
