@@ -27,6 +27,11 @@ def decode(_d):
             res = int.from_bytes(d[:int(abs(q/8))], 'little')
             print(f'{name}:', ':'.join('{:02x}'.format(c) for c in d[:int(abs(q/8))]), f'({res})')
             d = d[int(abs(q/8)):]
+
+                # fix
+        if name in fix:
+            res = res * (2**fix[name])
+    
         return res
 
     def sread(n, name):
@@ -44,6 +49,11 @@ def decode(_d):
         'NumMaxVoltages': 32,
         'NumMinVoltages': 32,
         'Resistances': 32
+    }
+
+    fix = {
+        'Micro_Temperature': -9,
+        'Switch_Temperature': -12
     }
 
     vars = {
