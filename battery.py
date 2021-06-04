@@ -37,9 +37,9 @@ def decode(_d):
         if res >= 2**(n-1):
             res -= 2**n
         if name in ['Cum_Ah_Charge', 'Cum_Ah_Discharge']:
-            res = res * (2**-31)
+            res = float(res) * (2**-31)
         elif name in ['Cum_Ah']:
-            res = res * (2**-14)
+            res = float(res) * (2**-14)
         return res
 
 
