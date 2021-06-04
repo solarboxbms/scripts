@@ -15,6 +15,7 @@ def decode(_d):
     print(f'Length: {len(d)}')
     # pop
     def read(q, name):
+        """unsigned number"""
         global d
         if q <= 0:
             if int.from_bytes(d[:4], 'little') & (1 << 31):
@@ -27,17 +28,18 @@ def decode(_d):
             res = int.from_bytes(d[:int(abs(q/8))], 'little')
             print(f'{name}:', ':'.join('{:02x}'.format(c) for c in d[:int(abs(q/8))]), f'({res})')
             d = d[int(abs(q/8)):]
-
-                # fix
-        if name in fix:
-            res = res * (2**fix[name])
     
         return res
 
     def sread(n, name):
+        """signed number"""
         res = read(n, name)
         if res >= 2**(n-1):
             res -= 2**n
+        if name in ['Cum_Ah_Charge', 'Cum_Ah_Discharge']:
+            res = res * (2**-31)
+        elif name in ['Cum_Ah']:
+            res = res * (2**-14)
         return res
 
 
@@ -51,11 +53,6 @@ def decode(_d):
         'Resistances': 32
     }
 
-    fix = {
-        'Micro_Temperature': -9,
-        'Switch_Temperature': -12
-    }
-
     vars = {
         'Total_Voltage': -24,
         'Vcapacitor': -24,
@@ -65,8 +62,8 @@ def decode(_d):
         '#Cum_Ah_Discharge': 64, #-64 # v.5 | 32 - others
         'Last_Ah_Charge': 32,
         'Last_Ah_Discharge': 32,
-        'Switch_Temperature': -20,
-        'Micro_Temperature': -20,
+        'Switch_Temperature': -12,
+        'Micro_Temperature': -9,
         'Batt_Temperature_1': -20,
         'Batt_Temperature_2': -20,
         'SOC': 16,
