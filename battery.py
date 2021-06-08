@@ -28,7 +28,10 @@ def decode(_d):
             res = int.from_bytes(d[:int(abs(q/8))], 'little')
             print(f'{name}:', ':'.join('{:02x}'.format(c) for c in d[:int(abs(q/8))]), f'({res})')
             d = d[int(abs(q/8)):]
-    
+
+        if name in ['SOC']:
+            res = float(res) * (2**-13) * 100
+
         return res
 
     def sread(n, name):
@@ -40,8 +43,6 @@ def decode(_d):
             res = float(res) * (2**-31)
         elif name in ['Cum_Ah']:
             res = float(res) * (2**-14)
-        elif name in ['SOC']:
-            res = float(res) * (2**13) * 100
         return res
 
 
