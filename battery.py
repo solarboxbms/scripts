@@ -40,6 +40,8 @@ def decode(_d):
             res = float(res) * (2**-31)
         elif name in ['Cum_Ah']:
             res = float(res) * (2**-14)
+        elif name in ['SOC']:
+            res = float(res) * (2**13) * 100
         return res
 
 
