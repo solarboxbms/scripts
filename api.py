@@ -48,16 +48,17 @@ siri = SiriDBClient(
     hostlist=[(config.SIRIDB.host, config.SIRIDB.port)],  # Multiple connections are supported
     keepalive=True,
     loop=loop)
+siri.connect()
 
 async def _query_devices():
-    await siri.connect()
+    # await siri.connect()
     res_uptime = await siri.query(f'select last() from /.*.uptime/ after now - 5m')
     res_soc = await siri.query(f'select last() from /.*.soc/ after now - 5m')
     res_switch_on = await siri.query(f'select last() from /.*.switch_on/ after now - 5m')
     res_switch_state = await siri.query(f'select last() from /.*.switch_state/ after now - 5m')
     res_switch_current = await siri.query(f'select last() from /.*.switch_current/ after now - 5m')
     res_total_voltage = await siri.query(f'select last() from /.*.total_voltage/ after now - 5m')
-    siri.close()
+    # siri.close()
 
     # pprint(DATA)
 
@@ -101,9 +102,9 @@ async def _query_devices():
     return DATA
 
 async def _query_device(device_id):
-    await siri.connect()
+    # await siri.connect()
     res_all = await siri.query(f'select last() from /{device_id}.*/ after now - 5m')
-    siri.close()
+    # siri.close()
 
     data = {
         'device_id': device_id
