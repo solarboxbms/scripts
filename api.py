@@ -51,7 +51,7 @@ siri = SiriDBClient(
 siri.connect()
 
 async def _query_devices():
-    # await siri.connect()
+    await siri.connect()
     res_uptime = await siri.query(f'select last() from /.*.uptime/ after now - 5m')
     res_soc = await siri.query(f'select last() from /.*.soc/ after now - 5m')
     res_switch_on = await siri.query(f'select last() from /.*.switch_on/ after now - 5m')
@@ -102,7 +102,7 @@ async def _query_devices():
     return DATA
 
 async def _query_device(device_id):
-    # await siri.connect()
+    await siri.connect()
     res_all = await siri.query(f'select last() from /{device_id}.*/ after now - 5m')
     # siri.close()
 
