@@ -107,7 +107,7 @@ async def _query_device(device_id):
     # siri.close()
 
     data = {
-        'device_id': device_id
+        'uuid': device_id
     }
     for k, v in res_all.items():
         if '.' in k:
