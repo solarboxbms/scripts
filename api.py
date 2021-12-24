@@ -1,10 +1,14 @@
 import asyncio
 import config
+import paho.mqtt.publish as publish
 from siridb.connector import SiriDBClient
 from typing import Optional
 from fastapi import FastAPI
 from fastapi_versioning import VersionedFastAPI, version
 from pprint import pprint
+
+
+
 
 # TODO: add i18n/helpers - detail info of variables
 
@@ -28,7 +32,7 @@ for k1, v1 in config.DEVICES.items():
             'switch_on': False,
             'switch_state': False,
             'switch_current': 0,
-            'total_voltage': 0
+            'total_voltage': 0,
         }
 
 # asyncio loop
@@ -53,7 +57,6 @@ async def _query_devices():
     res_switch_state = await siri.query(f'select last() from /.*.switch_state/ after now - 5m')
     res_switch_current = await siri.query(f'select last() from /.*.switch_current/ after now - 5m')
     res_total_voltage = await siri.query(f'select last() from /.*.total_voltage/ after now - 5m')
-    # siri.close()
 
     # pprint(DATA)
 
@@ -71,16 +74,16 @@ async def _query_devices():
                 print(f'ERROR! UUID {oid} not in DATA', v)
 
     for k, v in res_switch_on.items():
-        if '.' in k:
+        if v and '.' in k:
             oid = k.split('.')[0]
             if oid in DATA:
-                DATA[oid]['switch_on'] = True and v[0][1] or False
+                DATA[oid]['switch_on'] = v[0][1] and True or False
 
     for k, v in res_switch_state.items():
-        if '.' in k:
+        if v and '.' in k:
             oid = k.split('.')[0]
             if oid in DATA:
-                DATA[oid]['switch_state'] = True and v[0][1] or False
+                DATA[oid]['switch_state'] = v[0][1] and True or False
 
     for k, v in res_switch_current.items():
         if '.' in k:
@@ -102,11 +105,18 @@ async def _query_device(device_id):
     # siri.close()
 
     data = DATA[device_id]
+    cell_voltages = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     for k, v in res_all.items():
-        if '.' in k:
+        # save cell voltages (partialy)
+        if 'voltages' in k:
+            cell = int(k.split('.')[2]) - 1
+            cell_voltages[cell] = v[0][1]
+        elif '.' in k:
             key = '.'.join(k.split('.')[1:])
             if key in DEVICE_KEYS:
                 data[key] = v and v[0][1] or 0
+    # include cell voltages
+    data['cells'] = cell_voltages
 
     return data
 
@@ -123,6 +133,28 @@ async def read_devices():
 async def read_device(device_id: str): #, q: Optional[str] = None):
     data = await _query_device(device_id)
     return data
+
+@app.get("/device/{device_id}/switch/{new_switch_state}")
+@version(1)
+async def change_switch(device_id: str, new_switch_state: str): #, q: Optional[str] = None):
+    topic = f'solarbox/{device_id}/action'
+    if new_switch_state == 'true':
+        payload = 'on'
+    else:
+        payload = 'off'
+
+    print(topic, payload)
+    #publish.single(
+    #    topic, payload=payload, hostname="mqtt.solarbox.xyz",
+    #    port=1883, client_id="API", keepalive=60
+    #)
+        #will=None,
+        #auth={username:"user", password:"pass"}, tls=None,
+        #protocol=mqtt.MQTTv311, transport="tcp")
+    return '{"status": "done"}'
+
+
+    
 
 # https://stackoverflow.com/questions/66390509/how-to-set-fast-api-version-to-allow-http-can-specify-version-in-accept-header
 app = VersionedFastAPI(app,
