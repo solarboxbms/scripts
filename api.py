@@ -65,7 +65,7 @@ async def _query_devices():
         DATA[oid]['state'] = 'offline'
 
     for k, v in res_soc.items():
-        if '.' in k:
+        if v and '.' in k:
             oid = k.split('.')[0]
             if oid in DATA:
                 DATA[oid]['soc'] = v and v[0][1] or 0
@@ -86,13 +86,13 @@ async def _query_devices():
                 DATA[oid]['switch_state'] = v[0][1] and True or False
 
     for k, v in res_switch_current.items():
-        if '.' in k:
+        if v and '.' in k:
             oid = k.split('.')[0]
             if oid in DATA:
                 DATA[oid]['switch_current'] = v and v[0][1] or 0
 
     for k, v in res_total_voltage.items():
-        if '.' in k:
+        if v and '.' in k:
             oid = k.split('.')[0]
             if oid in DATA:
                 DATA[oid]['total_voltage'] = v and v[0][1] or 0
@@ -107,14 +107,15 @@ async def _query_device(device_id):
     data = DATA[device_id]
     cell_voltages = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     for k, v in res_all.items():
-        # save cell voltages (partialy)
-        if 'voltages' in k:
-            cell = int(k.split('.')[2]) - 1
-            cell_voltages[cell] = v[0][1]
-        elif '.' in k:
-            key = '.'.join(k.split('.')[1:])
-            if key in DEVICE_KEYS:
-                data[key] = v and v[0][1] or 0
+        if v:
+            # save cell voltages (partialy)
+            if 'voltages' in k:
+                cell = int(k.split('.')[2]) - 1
+                cell_voltages[cell] = v[0][1]
+            elif '.' in k:
+                key = '.'.join(k.split('.')[1:])
+                if key in DEVICE_KEYS:
+                    data[key] = v and v[0][1] or 0
     # include cell voltages
     data['cells'] = cell_voltages
 
