@@ -13,11 +13,6 @@ DEVICE_KEYS = [
     'switch_temperature',
     'batt_temperature_2', # Ambient
     'batt_temperature_1', # Battery
-    'soc',
-    'switch_on',
-    'switch_state',
-    'switch_current',
-    'total_voltage'
 ]
 
 # set groups by uuid
@@ -30,8 +25,8 @@ for k1, v1 in config.DEVICES.items():
             'state': 'offline',
             'group': v2['group'],
             'soc': 0,
-            'switch_on': 0,
-            'switch_state': 0,
+            'switch_on': False,
+            'switch_state': False,
             'switch_current': 0,
             'total_voltage': 0
         }
@@ -79,13 +74,13 @@ async def _query_devices():
         if '.' in k:
             oid = k.split('.')[0]
             if oid in DATA:
-                DATA[oid]['switch_on'] = v and v[0][1] or 0
+                DATA[oid]['switch_on'] = True and v[0][1] or False
 
     for k, v in res_switch_state.items():
         if '.' in k:
             oid = k.split('.')[0]
             if oid in DATA:
-                DATA[oid]['switch_state'] = v and v[0][1] or 0
+                DATA[oid]['switch_state'] = True and v[0][1] or False
 
     for k, v in res_switch_current.items():
         if '.' in k:
@@ -106,14 +101,13 @@ async def _query_device(device_id):
     res_all = await siri.query(f'select last() from /{device_id}.*/ after now - 5m')
     # siri.close()
 
-    data = {
-        'uuid': device_id
-    }
+    data = DATA[device_id]
     for k, v in res_all.items():
         if '.' in k:
             key = '.'.join(k.split('.')[1:])
             if key in DEVICE_KEYS:
                 data[key] = v and v[0][1] or 0
+
     return data
 
 app = FastAPI()
