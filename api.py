@@ -132,19 +132,28 @@ async def read_devices():
 @app.get("/device/{device_id}")
 @version(1)
 async def read_device(device_id: str): #, q: Optional[str] = None):
+    # mqtt data
     data = await _query_device(device_id)
+    topic = f'solarbox/{device_id}/action'
+    payload = 'battery'
+    # publish
+    publish.single(
+        topic, payload=payload, hostname="mqtt.solarbox.xyz",
+        port=1883, client_id="API", keepalive=60
+    )
     return data
 
 @app.get("/device/{device_id}/switch/{new_switch_state}")
 @version(1)
 async def change_switch(device_id: str, new_switch_state: str): #, q: Optional[str] = None):
+    # mqtt data
     topic = f'solarbox/{device_id}/action'
     if new_switch_state == 'true':
         payload = 'on'
     else:
         payload = 'off'
-
     print(topic, payload)
+    # publish
     #publish.single(
     #    topic, payload=payload, hostname="mqtt.solarbox.xyz",
     #    port=1883, client_id="API", keepalive=60
