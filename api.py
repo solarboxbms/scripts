@@ -11,12 +11,20 @@ from pprint import pprint
 
 
 # TODO: add i18n/helpers - detail info of variables
-
+# TODO: device structure with type
 DEVICE_KEYS = [
     'micro_temperature',
     'switch_temperature',
     'batt_temperature_2', # Ambient
     'batt_temperature_1', # Battery
+    'soc',
+    'switch_current',
+    'total_voltage',
+]
+
+DEVICE_KEYS_BOOLEAN = [
+    'switch_on',
+    'switch_state',
 ]
 
 # set groups by uuid
@@ -61,41 +69,41 @@ async def _query_devices():
     # pprint(DATA)
 
     # set offline
-    for oid in DATA.keys():
-        DATA[oid]['state'] = 'offline'
+    for device_id in DATA.keys():
+        DATA[device_id]['state'] = 'offline'
 
     for k, v in res_soc.items():
         if v and '.' in k:
-            oid = k.split('.')[0]
-            if oid in DATA:
-                DATA[oid]['soc'] = v and v[0][1] or 0
-                DATA[oid]['state'] = 'online'
+            device_id = k.split('.')[0]
+            if device_id in DATA:
+                DATA[device_id]['soc'] = v and v[0][1] or 0
+                DATA[device_id]['state'] = 'online'
             elif v:
-                print(f'ERROR! UUID {oid} not in DATA', v)
+                print(f'ERROR! UUID {device_id} not in DATA', v)
 
     for k, v in res_switch_on.items():
         if v and '.' in k:
-            oid = k.split('.')[0]
-            if oid in DATA:
-                DATA[oid]['switch_on'] = v[0][1] and True or False
+            device_id = k.split('.')[0]
+            if device_id in DATA:
+                DATA[device_id]['switch_on'] = v[0][1] and True or False
 
     for k, v in res_switch_state.items():
         if v and '.' in k:
-            oid = k.split('.')[0]
-            if oid in DATA:
-                DATA[oid]['switch_state'] = v[0][1] and True or False
+            device_id = k.split('.')[0]
+            if device_id in DATA:
+                DATA[device_id]['switch_state'] = v[0][1] and True or False
 
     for k, v in res_switch_current.items():
         if v and '.' in k:
-            oid = k.split('.')[0]
-            if oid in DATA:
-                DATA[oid]['switch_current'] = v and v[0][1] or 0
+            device_id = k.split('.')[0]
+            if device_id in DATA:
+                DATA[device_id]['switch_current'] = v and v[0][1] or 0
 
     for k, v in res_total_voltage.items():
         if v and '.' in k:
-            oid = k.split('.')[0]
-            if oid in DATA:
-                DATA[oid]['total_voltage'] = v and v[0][1] or 0
+            device_id = k.split('.')[0]
+            if device_id in DATA:
+                DATA[device_id]['total_voltage'] = v and v[0][1] or 0
 
     return DATA
 
@@ -116,6 +124,8 @@ async def _query_device(device_id):
                 key = '.'.join(k.split('.')[1:])
                 if key in DEVICE_KEYS:
                     data[key] = v and v[0][1] or 0
+                if key in DEVICE_KEYS_BOOLEAN:
+                    data[key] = v[0][1] and True or False
     # include cell voltages
     data['cells'] = cell_voltages
 
@@ -169,8 +179,6 @@ async def change_switch(device_id: str, new_switch_state: str): #, q: Optional[s
         #protocol=mqtt.MQTTv311, transport="tcp")
     return '{"status": "done"}'
 
-
-    
 
 # https://stackoverflow.com/questions/66390509/how-to-set-fast-api-version-to-allow-http-can-specify-version-in-accept-header
 app = VersionedFastAPI(app,
