@@ -153,11 +153,17 @@ async def change_switch(device_id: str, new_switch_state: str): #, q: Optional[s
     else:
         payload = 'off'
     print(topic, payload)
-    # publish
-    #publish.single(
-    #    topic, payload=payload, hostname="mqtt.solarbox.xyz",
-    #    port=1883, client_id="API", keepalive=60
-    #)
+    # publish switch action
+    publish.single(
+        topic, payload=payload, hostname="mqtt.solarbox.xyz",
+        port=1883, client_id="API", keepalive=60
+    )
+    # get data again
+    payload = 'battery'
+    publish.single(
+        topic, payload=payload, hostname="mqtt.solarbox.xyz",
+        port=1883, client_id="API", keepalive=60
+    )
         #will=None,
         #auth={username:"user", password:"pass"}, tls=None,
         #protocol=mqtt.MQTTv311, transport="tcp")
