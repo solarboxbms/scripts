@@ -168,6 +168,7 @@ async def change_switch(device_id: str, new_switch_state: str): #, q: Optional[s
         topic, payload=payload, hostname="mqtt.solarbox.xyz",
         port=1883, client_id="API", keepalive=60
     )
+    await asyncio.sleep(2)
     # get data again
     payload = 'battery'
     publish.single(
