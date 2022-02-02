@@ -1,5 +1,6 @@
 import asyncio
 import config
+import uvicorn
 import paho.mqtt.publish as publish
 from siridb.connector import SiriDBClient
 from typing import Optional
@@ -8,7 +9,7 @@ from fastapi_versioning import VersionedFastAPI, version
 from pprint import pprint
 
 
-
+PRODUCTION = True
 
 # TODO: add i18n/helpers - detail info of variables
 # TODO: device structure with type
@@ -44,18 +45,20 @@ for k1, v1 in config.DEVICES.items():
         }
 
 # asyncio loop
-loop = asyncio.get_event_loop()
+#loop = asyncio.get_event_loop()
 
 # connect with siriDB
 loop = asyncio.get_event_loop()
-siri = SiriDBClient(
-    username=config.SIRIDB.username,
-    password=config.SIRIDB.password,
-    dbname=config.SIRIDB.dbname,
-    hostlist=[(config.SIRIDB.host, config.SIRIDB.port)],  # Multiple connections are supported
-    keepalive=True,
-    loop=loop)
-siri.connect()
+
+if PRODUCTION:
+    siri = SiriDBClient(
+        username=config.SIRIDB.username,
+        password=config.SIRIDB.password,
+        dbname=config.SIRIDB.dbname,
+        hostlist=[(config.SIRIDB.host, config.SIRIDB.port)],  # Multiple connections are supported
+        keepalive=True,
+        loop=loop)
+    siri.connect()
 
 async def _query_devices():
     await siri.connect()
@@ -133,6 +136,16 @@ async def _query_device(device_id):
 
 app = FastAPI()
 
+@app.post("/auth")
+@version(1)
+async def auth():
+    data = {
+        'authorized': True,
+        'name': 'Demo',
+        'token': 'fef3b7fc-f923-4cae-a041-8632417c436f '
+    }
+    return data
+
 @app.get("/devices")
 @version(1)
 async def read_devices():
@@ -185,3 +198,6 @@ async def change_switch(device_id: str, new_switch_state: str): #, q: Optional[s
 app = VersionedFastAPI(app,
     version_format='{major}',
     prefix_format='/v{major}')
+
+if __name__ == '__main__':
+    uvicorn.run(app, host="0.0.0.0", port=8000)
