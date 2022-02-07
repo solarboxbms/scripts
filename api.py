@@ -1,13 +1,35 @@
 import asyncio
 import config
 import uvicorn
+import sys
 import paho.mqtt.publish as publish
 from siridb.connector import SiriDBClient
 from typing import Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi_versioning import VersionedFastAPI, version
 from pprint import pprint
+from pydantic import BaseModel
+from ooop import OOOP
 
+# models
+class Login(BaseModel):
+    email: str
+    password: str
+
+class Token(BaseModel):
+    token: str
+
+
+# connect with Odoo
+print('Connecting with Odoo...')
+o = OOOP(
+    user=config.Odoo.user,
+    pwd=config.Odoo.pwd,
+    dbname=config.Odoo.dbname,
+    uri=config.Odoo.uri,
+    port=config.Odoo.port,
+    #debug=Odoo.debug
+)
 
 PRODUCTION = True
 
@@ -28,22 +50,6 @@ DEVICE_KEYS_BOOLEAN = [
     'switch_state',
 ]
 
-# set groups by uuid
-DATA = {}
-for k1, v1 in config.DEVICES.items():
-    for k2, v2 in v1.items():
-        DATA[k2] = {
-            'uuid': k2,
-            'name': v2['name'],
-            'state': 'offline',
-            'group': v2['group'],
-            'soc': 0,
-            'switch_on': False,
-            'switch_state': False,
-            'switch_current': 0,
-            'total_voltage': 0,
-        }
-
 # asyncio loop
 #loop = asyncio.get_event_loop()
 
@@ -60,7 +66,28 @@ if PRODUCTION:
         loop=loop)
     siri.connect()
 
-async def _query_devices():
+async def _query_devices(user):
+    # prepare DATA for user
+    if user.role == 'superadmin':
+        devices = o.Iot_devicesDevice.filter(domain_id='solarbox')
+    elif user.role == 'user':
+        devices = o.Iot_devicesDevice.filter(group_id__in=[i.id for i in user.group_ids])
+    
+    DATA = {}
+    for device in devices:
+        DATA[device.uuid] = {
+            'uuid': device.uuid,
+            'name': device.name,
+            'state': 'offline',
+            'group': device.group_id.name,
+            'soc': 0,
+            'switch_on': False,
+            'switch_state': False,
+            'switch_current': 0,
+            'total_voltage': 0,
+        }
+    print(DATA)
+
     await siri.connect()
     res_uptime = await siri.query(f'select last() from /.*.uptime/ after now - 5m')
     res_soc = await siri.query(f'select last() from /.*.soc/ after now - 5m')
@@ -69,7 +96,7 @@ async def _query_devices():
     res_switch_current = await siri.query(f'select last() from /.*.switch_current/ after now - 5m')
     res_total_voltage = await siri.query(f'select last() from /.*.total_voltage/ after now - 5m')
 
-    # pprint(DATA)
+
 
     # set offline
     for device_id in DATA.keys():
@@ -110,12 +137,25 @@ async def _query_devices():
 
     return DATA
 
+# TODO: check user / token
 async def _query_device(device_id):
     await siri.connect()
     res_all = await siri.query(f'select last() from /{device_id}.*/ after now - 5m')
     # siri.close()
 
-    data = DATA[device_id]
+    device = o.Iot_devicesDevice.filter(uuid=device_id)[0]
+    data = {
+            'uuid': device.uuid,
+            'name': device.name,
+            'state': 'offline',
+            'group': device.group_id.name,
+            'soc': 0,
+            'switch_on': False,
+            'switch_state': False,
+            'switch_current': 0,
+            'total_voltage': 0,
+        }
+
     cell_voltages = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     for k, v in res_all.items():
         if v:
@@ -136,22 +176,34 @@ async def _query_device(device_id):
 
 app = FastAPI()
 
+# endpoints
 @app.post("/auth")
 @version(1)
-async def auth():
-    data = {
-        'authorized': True,
-        'name': 'Demo',
-        'token': 'fef3b7fc-f923-4cae-a041-8632417c436f '
+async def auth(login: Login):
+    user = o.Iot_devicesUser.filter(email=login.email, password=login.password)
+    if not user:
+        res = {
+        'authorized': False
     }
-    return data
+    else:
+        res = {
+            'authorized': True,
+            'name': user[0].name,
+            'token': user[0].uuid
+        }
+    return res
 
 @app.get("/devices")
 @version(1)
-async def read_devices():
-    data = await _query_devices()
-    return list(data.values())
+async def read_devices(token: Token):
+    user = o.Iot_devicesUser.filter(uuid=token.token)
+    if not user:
+        return
+    else:
+        res = await _query_devices(user[0])
+        return list(res.values())
 
+# TODO: check user/token
 @app.get("/device/{device_id}")
 @version(1)
 async def read_device(device_id: str): #, q: Optional[str] = None):
@@ -166,6 +218,7 @@ async def read_device(device_id: str): #, q: Optional[str] = None):
     )
     return data
 
+# TODO: check user/token (observers can't launch actions)
 @app.get("/device/{device_id}/switch/{new_switch_state}")
 @version(1)
 async def change_switch(device_id: str, new_switch_state: str): #, q: Optional[str] = None):
