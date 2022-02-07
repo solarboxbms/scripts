@@ -64,7 +64,7 @@ if PRODUCTION:
         hostlist=[(config.SIRIDB.host, config.SIRIDB.port)],  # Multiple connections are supported
         keepalive=True,
         loop=loop)
-    siri.connect()
+    #siri.connect()
 
 async def _query_devices(user):
     # prepare DATA for user
@@ -86,7 +86,6 @@ async def _query_devices(user):
             'switch_current': 0,
             'total_voltage': 0,
         }
-    print(DATA)
 
     await siri.connect()
     res_uptime = await siri.query(f'select last() from /.*.uptime/ after now - 5m')
@@ -193,7 +192,7 @@ async def auth(login: Login):
         }
     return res
 
-@app.get("/devices")
+@app.post("/devices")
 @version(1)
 async def read_devices(token: Token):
     user = o.Iot_devicesUser.filter(uuid=token.token)
